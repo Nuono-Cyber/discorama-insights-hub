@@ -39,8 +39,8 @@ export function AgencyChart({ data }: AgencyChartProps) {
       className="rounded-xl border border-border bg-card p-6"
     >
       <div className="mb-6">
-        <h3 className="text-lg font-semibold">Receita por Agência</h3>
-        <p className="text-sm text-muted-foreground">Top 8 agências por faturamento</p>
+        <h3 className="text-lg font-semibold">Saldo por Agência</h3>
+        <p className="text-sm text-muted-foreground">Top 8 agências por saldo total</p>
       </div>
       
       <div className="h-[300px]">

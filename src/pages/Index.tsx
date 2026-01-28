@@ -2,21 +2,22 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   DollarSign, 
-  ShoppingCart, 
+  CreditCard, 
   Users, 
-  CreditCard,
-  Clock,
-  AlertTriangle,
+  Building2,
+  TrendingUp,
+  Percent,
   BarChart3,
   MessageSquare
 } from 'lucide-react';
 import { loadData, DashboardData, formatCurrency, formatNumber } from '@/lib/dataService';
 import { KPICard } from '@/components/dashboard/KPICard';
-import { RevenueChart } from '@/components/dashboard/RevenueChart';
-import { StatusChart } from '@/components/dashboard/StatusChart';
+import { TransactionsChart } from '@/components/dashboard/TransactionsChart';
+import { CreditChart } from '@/components/dashboard/CreditChart';
+import { InterestRateChart } from '@/components/dashboard/InterestRateChart';
 import { AgencyChart } from '@/components/dashboard/AgencyChart';
 import { TopCustomersTable } from '@/components/dashboard/TopCustomersTable';
-import { DelayMetrics } from '@/components/dashboard/DelayMetrics';
+import { CreditMetrics } from '@/components/dashboard/CreditMetrics';
 import { StateChart } from '@/components/dashboard/StateChart';
 import { ReportHeader } from '@/components/dashboard/ReportHeader';
 import { AIChatbot } from '@/components/dashboard/AIChatbot';
@@ -45,7 +46,7 @@ const Index = () => {
             <BarChart3 className="h-8 w-8 text-primary-foreground" />
           </div>
           <h2 className="text-xl font-semibold mb-2">Carregando Dashboard</h2>
-          <p className="text-muted-foreground">Processando dados da Discorama...</p>
+          <p className="text-muted-foreground">Processando dados bancários...</p>
         </motion.div>
       </div>
     );
@@ -55,9 +56,9 @@ const Index = () => {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
-          <AlertTriangle className="h-12 w-12 mx-auto text-destructive mb-4" />
+          <Building2 className="h-12 w-12 mx-auto text-destructive mb-4" />
           <h2 className="text-xl font-semibold mb-2">Erro ao carregar dados</h2>
-          <p className="text-muted-foreground">Não foi possível processar os dados.</p>
+          <p className="text-muted-foreground">Não foi possível processar os dados bancários.</p>
         </div>
       </div>
     );
@@ -101,17 +102,17 @@ const Index = () => {
             {/* KPI Cards */}
             <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <KPICard
-                title="Receita Total"
-                value={formatCurrency(kpis.totalRevenue)}
-                subtitle={`${formatNumber(kpis.totalOrders)} pedidos`}
+                title="Saldo Total em Contas"
+                value={formatCurrency(kpis.totalBalance)}
+                subtitle={`${formatNumber(kpis.totalAccounts)} contas`}
                 icon={DollarSign}
                 variant="default"
                 delay={0}
               />
               <KPICard
-                title="Ticket Médio"
-                value={formatCurrency(kpis.averageTicket)}
-                subtitle="Por pedido"
+                title="Volume de Crédito"
+                value={formatCurrency(kpis.totalCreditValue)}
+                subtitle={`${formatNumber(kpis.totalProposals)} propostas`}
                 icon={CreditCard}
                 variant="info"
                 delay={0.1}
@@ -119,16 +120,16 @@ const Index = () => {
               <KPICard
                 title="Total de Clientes"
                 value={formatNumber(kpis.totalCustomers)}
-                subtitle={`${data.agencies.length} agências`}
+                subtitle={`${kpis.totalEmployees} colaboradores`}
                 icon={Users}
                 variant="success"
                 delay={0.2}
               />
               <KPICard
-                title="Atraso Médio"
-                value={`${kpis.averageDelay.toFixed(1)} dias`}
-                subtitle={`${kpis.lateOrders} com atraso`}
-                icon={Clock}
+                title="Taxa Média de Juros"
+                value={`${kpis.averageInterestRate.toFixed(2)}%`}
+                subtitle="Taxa mensal média"
+                icon={Percent}
                 variant="warning"
                 delay={0.3}
               />
@@ -136,23 +137,29 @@ const Index = () => {
 
             {/* Charts Grid */}
             <div className="grid gap-6 lg:grid-cols-2">
-              <RevenueChart data={kpis.revenueByMonth} />
-              <StatusChart data={kpis.ordersByStatus} />
+              <TransactionsChart data={kpis.transactionsByMonth} />
+              <CreditChart data={kpis.proposalsByMonth} />
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
-              <AgencyChart data={kpis.revenueByAgency} />
-              <StateChart data={kpis.revenueByState} />
+              <AgencyChart data={kpis.balanceByAgency} />
+              <InterestRateChart data={kpis.interestRateDistribution} />
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
-              <TopCustomersTable data={kpis.topCustomers} />
-              <DelayMetrics
-                averageDelay={kpis.averageDelay}
-                lateOrders={kpis.lateOrders}
-                lateOrdersPercentage={kpis.lateOrdersPercentage}
-                ordersOnTime={kpis.ordersOnTime}
+              <TopCustomersTable data={kpis.topCustomersByBalance} />
+              <CreditMetrics
+                totalProposals={kpis.totalProposals}
+                totalCreditValue={kpis.totalCreditValue}
+                averageCreditValue={kpis.averageCreditValue}
+                averageInterestRate={kpis.averageInterestRate}
+                averageInstallments={kpis.averageInstallments}
+                proposalsByStatus={kpis.proposalsByStatus}
               />
+            </div>
+
+            <div className="mt-6">
+              <StateChart data={kpis.balanceByState} />
             </div>
 
             {/* Business Questions Section */}
@@ -165,35 +172,35 @@ const Index = () => {
               <h3 className="mb-4 text-lg font-semibold">Perguntas de Negócio Relevantes</h3>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="rounded-lg bg-muted/30 p-4">
-                  <h4 className="font-medium text-primary mb-2">📊 Receita</h4>
+                  <h4 className="font-medium text-primary mb-2">💰 Carteira de Crédito</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Evolução da receita por dia/semana/mês/ano?</li>
-                    <li>• Média móvel de receita por período?</li>
-                    <li>• Receita por filme, gênero ou loja?</li>
+                    <li>• Evolução do volume de crédito por período?</li>
+                    <li>• Ticket médio de financiamento por agência?</li>
+                    <li>• Concentração de risco por faixa de taxa?</li>
                   </ul>
                 </div>
                 <div className="rounded-lg bg-muted/30 p-4">
-                  <h4 className="font-medium text-warning mb-2">🎫 Ticket Médio</h4>
+                  <h4 className="font-medium text-warning mb-2">📊 Movimentação</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Ticket médio por gênero de filme?</li>
-                    <li>• Ticket médio por agência?</li>
-                    <li>• Correlação ticket x frequência?</li>
+                    <li>• Fluxo líquido de recursos por período?</li>
+                    <li>• Proporção depósitos vs saques por agência?</li>
+                    <li>• Sazonalidade nas transações?</li>
                   </ul>
                 </div>
                 <div className="rounded-lg bg-muted/30 p-4">
-                  <h4 className="font-medium text-destructive mb-2">⏱️ Atrasos</h4>
+                  <h4 className="font-medium text-destructive mb-2">⚠️ Risco</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Taxa de atraso por agência?</li>
-                    <li>• Perfil de clientes com maior atraso?</li>
-                    <li>• Impacto financeiro dos atrasos?</li>
+                    <li>• Distribuição de taxas de juros?</li>
+                    <li>• Perfil de clientes por valor de crédito?</li>
+                    <li>• Concentração geográfica da carteira?</li>
                   </ul>
                 </div>
                 <div className="rounded-lg bg-muted/30 p-4">
                   <h4 className="font-medium text-success mb-2">👥 Clientes</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Segmentação de clientes por comportamento?</li>
-                    <li>• Taxa de retenção por período?</li>
-                    <li>• LTV (Lifetime Value) por segmento?</li>
+                    <li>• Segmentação por saldo e movimentação?</li>
+                    <li>• Penetração de crédito na base?</li>
+                    <li>• Rentabilidade por segmento de cliente?</li>
                   </ul>
                 </div>
               </div>
@@ -206,30 +213,30 @@ const Index = () => {
               transition={{ duration: 0.5, delay: 0.9 }}
               className="mt-6 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5 p-6"
             >
-              <h3 className="mb-4 text-lg font-semibold">🎯 Recomendações para o CEO</h3>
+              <h3 className="mb-4 text-lg font-semibold">🎯 Recomendações Estratégicas</h3>
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="rounded-lg bg-card/50 p-4 border border-border">
                   <h4 className="font-semibold mb-2 text-primary">Curto Prazo</h4>
                   <ul className="text-sm text-muted-foreground space-y-2">
-                    <li>✓ Implementar sistema de notificações para reduzir atrasos</li>
-                    <li>✓ Criar programa de fidelidade para top clientes</li>
-                    <li>✓ Dashboard de KPIs em tempo real</li>
+                    <li>✓ Dashboard de monitoramento de crédito em tempo real</li>
+                    <li>✓ Alertas de concentração de risco</li>
+                    <li>✓ Segmentação de clientes por potencial</li>
                   </ul>
                 </div>
                 <div className="rounded-lg bg-card/50 p-4 border border-border">
                   <h4 className="font-semibold mb-2 text-accent">Médio Prazo</h4>
                   <ul className="text-sm text-muted-foreground space-y-2">
-                    <li>✓ Integrar dados do CRM Salesforce</li>
-                    <li>✓ Automatizar relatórios recorrentes</li>
-                    <li>✓ Desenvolver modelo preditivo de churn</li>
+                    <li>✓ Modelo de scoring de crédito</li>
+                    <li>✓ Automação de análise de propostas</li>
+                    <li>✓ Integração com bureaus de crédito</li>
                   </ul>
                 </div>
                 <div className="rounded-lg bg-card/50 p-4 border border-border">
                   <h4 className="font-semibold mb-2 text-success">Longo Prazo</h4>
                   <ul className="text-sm text-muted-foreground space-y-2">
-                    <li>✓ Data warehouse centralizado</li>
-                    <li>✓ Cultura data-driven em todas as áreas</li>
-                    <li>✓ Machine Learning para recomendações</li>
+                    <li>✓ Data lake unificado</li>
+                    <li>✓ Machine Learning para precificação</li>
+                    <li>✓ Open Banking e APIs</li>
                   </ul>
                 </div>
               </div>

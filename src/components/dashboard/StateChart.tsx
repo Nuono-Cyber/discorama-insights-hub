@@ -29,8 +29,8 @@ export function StateChart({ data }: StateChartProps) {
       className="rounded-xl border border-border bg-card p-6"
     >
       <div className="mb-6">
-        <h3 className="text-lg font-semibold">Receita por Estado</h3>
-        <p className="text-sm text-muted-foreground">Distribuição geográfica</p>
+        <h3 className="text-lg font-semibold">Saldo por Estado</h3>
+        <p className="text-sm text-muted-foreground">Distribuição geográfica dos saldos</p>
       </div>
       
       <div className="h-[300px]">

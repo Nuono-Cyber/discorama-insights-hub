@@ -4,7 +4,7 @@ import { Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ReactMarkdown from 'react-markdown';
-import { DashboardData } from '@/lib/dataService';
+import { DashboardData, formatCurrency, formatNumber } from '@/lib/dataService';
 
 interface Message {
   id: string;
@@ -17,12 +17,12 @@ interface AIChatbotProps {
 }
 
 const suggestedQuestions = [
-  "Qual é o ticket médio da empresa?",
-  "Quais são as agências com maior faturamento?",
-  "Como está a taxa de atraso nas devoluções?",
-  "Quais são os top 5 clientes?",
-  "Como evoluiu a receita ao longo do tempo?",
-  "Quais são as recomendações para melhorar os KPIs?",
+  "Qual é o volume total de crédito?",
+  "Quais são as agências com maior saldo?",
+  "Como está a distribuição de taxas de juros?",
+  "Quais são os top clientes por saldo?",
+  "Como evoluíram as transações ao longo do tempo?",
+  "Quais são as recomendações para a carteira de crédito?",
 ];
 
 export function AIChatbot({ data }: AIChatbotProps) {
@@ -30,14 +30,14 @@ export function AIChatbot({ data }: AIChatbotProps) {
     {
       id: '1',
       role: 'assistant',
-      content: `Olá! Sou o assistente de analytics da **Discorama**. 🎬
+      content: `Olá! Sou o assistente de analytics bancário. 🏦
 
 Posso ajudá-lo a explorar os dados e obter insights sobre:
-- 📊 **KPIs e métricas** de negócio
-- 💰 **Receita e faturamento** por período, agência ou estado
-- 👥 **Análise de clientes** e comportamento
-- ⏱️ **Métricas de atraso** e pontualidade
-- 📈 **Tendências** e recomendações
+- 💰 **Carteira de crédito** e propostas de financiamento
+- 📊 **Movimentações** - depósitos e saques
+- 👥 **Análise de clientes** e contas
+- 📈 **Métricas por agência** e distribuição geográfica
+- ⚠️ **Análise de risco** e taxas de juros
 
 Como posso ajudá-lo hoje?`,
     },
@@ -62,124 +62,138 @@ Como posso ajudá-lo hoje?`,
     const q = question.toLowerCase();
     const { kpis } = data;
 
-    // Ticket médio
-    if (q.includes('ticket') || q.includes('médio')) {
-      const avgTicket = kpis.averageTicket;
-      return `## Ticket Médio 🎫
+    // Volume de crédito
+    if (q.includes('crédito') || q.includes('credito') || q.includes('financiamento') || q.includes('volume')) {
+      return `## Carteira de Crédito 💳
 
-O **ticket médio** atual da Discorama é de **R$ ${(avgTicket).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}**.
+### Visão Geral:
+- **Volume Total**: ${formatCurrency(kpis.totalCreditValue)}
+- **Total de Propostas**: ${formatNumber(kpis.totalProposals)}
+- **Ticket Médio**: ${formatCurrency(kpis.averageCreditValue)}
 
-### Análise:
-- Total de pedidos: ${kpis.totalOrders.toLocaleString('pt-BR')}
-- Receita total: R$ ${kpis.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+### Condições Médias:
+- **Taxa de Juros Média**: ${kpis.averageInterestRate.toFixed(2)}% a.m.
+- **Prazo Médio**: ${kpis.averageInstallments.toFixed(0)} parcelas
 
-### Recomendações para aumentar o ticket médio:
-1. **Cross-selling**: Sugerir filmes complementares no momento da locação
-2. **Bundles**: Criar pacotes promocionais (ex: 3 filmes por preço especial)
-3. **Programa de fidelidade**: Oferecer descontos progressivos
-4. **Upselling**: Promover lançamentos e títulos premium`;
+### Por Status:
+${kpis.proposalsByStatus.slice(0, 4).map(s => `- **${s.status}**: ${s.count} propostas - ${formatCurrency(s.value)}`).join('\n')}
+
+### Recomendações:
+1. Monitorar concentração de risco por faixa de taxa
+2. Avaliar política de precificação por perfil de cliente
+3. Automatizar processo de análise de crédito`;
     }
 
-    // Agências
-    if (q.includes('agência') || q.includes('agencias') || q.includes('loja')) {
-      const topAgencies = kpis.revenueByAgency.slice(0, 5);
-      const list = topAgencies.map((a, i) => `${i + 1}. **${a.name}**: R$ ${a.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`).join('\n');
+    // Agências / Saldo
+    if (q.includes('agência') || q.includes('agencias') || q.includes('saldo') || q.includes('loja')) {
+      const topAgencies = kpis.balanceByAgency.slice(0, 5);
+      const list = topAgencies.map((a, i) => `${i + 1}. **${a.name}**: ${formatCurrency(a.value)}`).join('\n');
       
-      return `## Top 5 Agências por Faturamento 🏪
+      return `## Top 5 Agências por Saldo 🏪
 
 ${list}
 
 ### Insights:
-- A **${topAgencies[0]?.name}** lidera com destaque
+- **${topAgencies[0]?.name}** lidera em volume de depósitos
 - ${data.agencies.length} agências ativas no total
-- Concentração de receita nas principais lojas indica oportunidade de desenvolver as demais`;
+- Concentração geográfica em ${kpis.balanceByState[0]?.uf || 'SP'}
+
+### Distribuição por Estado:
+${kpis.balanceByState.slice(0, 5).map(s => `- **${s.uf}**: ${formatCurrency(s.value)}`).join('\n')}`;
     }
 
-    // Atraso
-    if (q.includes('atraso') || q.includes('devolução') || q.includes('pontualidade')) {
-      return `## Métricas de Atraso ⏱️
+    // Taxa de juros
+    if (q.includes('taxa') || q.includes('juros') || q.includes('rate')) {
+      return `## Análise de Taxas de Juros 📊
 
-### Situação Atual:
-- **Atraso médio**: ${kpis.averageDelay.toFixed(1)} dias
-- **Pedidos com atraso**: ${kpis.lateOrders.toLocaleString('pt-BR')} (${kpis.lateOrdersPercentage.toFixed(1)}%)
-- **Pedidos no prazo**: ${kpis.ordersOnTime.toLocaleString('pt-BR')}
+### Taxa Média: ${kpis.averageInterestRate.toFixed(2)}% a.m.
 
-### Recomendações para reduzir atrasos:
-1. **Notificações**: SMS/WhatsApp lembrando da devolução
-2. **Incentivos**: Descontos para devoluções antecipadas
-3. **Penalidades graduais**: Multas proporcionais ao atraso
-4. **Análise de perfil**: Identificar clientes recorrentes com atraso`;
+### Distribuição por Faixa:
+${kpis.interestRateDistribution.map(r => `- **${r.range}**: ${r.count} propostas`).join('\n')}
+
+### Análise de Risco:
+- Maior concentração na faixa de 1.5-2.0%
+- Propostas acima de 2.5% representam maior risco
+- Recomenda-se política de precificação baseada em score
+
+### Recomendações:
+1. Implementar modelo de scoring de crédito
+2. Revisar política para faixas de maior risco
+3. Criar ofertas personalizadas por perfil`;
     }
 
     // Clientes
     if (q.includes('cliente') || q.includes('top')) {
-      const topCustomers = kpis.topCustomers.slice(0, 5);
-      const list = topCustomers.map((c, i) => `${i + 1}. **${c.name}**: ${c.orders} pedidos - R$ ${c.revenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`).join('\n');
+      const topCustomers = kpis.topCustomersByBalance.slice(0, 5);
+      const list = topCustomers.map((c, i) => `${i + 1}. **${c.name}**: ${formatCurrency(c.balance)} (${c.accounts} conta(s))`).join('\n');
       
-      return `## Top 5 Clientes 👥
+      return `## Top 5 Clientes por Saldo 👥
 
 ${list}
 
-### Insights:
-- ${kpis.totalCustomers.toLocaleString('pt-BR')} clientes cadastrados
-- Os top 10 clientes representam parcela significativa da receita
-- Oportunidade de programa VIP para fidelização`;
+### Métricas Gerais:
+- **Total de Clientes**: ${formatNumber(kpis.totalCustomers)}
+- **Total de Contas**: ${formatNumber(kpis.totalAccounts)}
+- **Saldo Médio por Conta**: ${formatCurrency(kpis.averageBalance)}
+
+### Oportunidades:
+- Programa de relacionamento para top clientes
+- Cross-sell de produtos para alta renda
+- Segmentação por potencial de investimento`;
     }
 
-    // Receita / Evolução
-    if (q.includes('receita') || q.includes('evolução') || q.includes('tendência') || q.includes('faturamento')) {
-      const recentMonths = kpis.revenueByMonth.slice(-3);
-      const trend = recentMonths.length >= 2 
-        ? ((recentMonths[recentMonths.length - 1].value - recentMonths[0].value) / recentMonths[0].value * 100).toFixed(1)
-        : 'N/A';
+    // Transações / Movimentação
+    if (q.includes('transação') || q.includes('transacao') || q.includes('movimentação') || q.includes('deposito') || q.includes('saque')) {
+      return `## Movimentação Financeira 💸
 
-      return `## Evolução da Receita 📈
+### Resumo:
+- **Total de Transações**: ${formatNumber(kpis.totalTransactions)}
+- **Total Depósitos**: ${formatCurrency(kpis.totalDeposits)}
+- **Total Saques**: ${formatCurrency(kpis.totalWithdrawals)}
+- **Fluxo Líquido**: ${formatCurrency(kpis.netFlow)}
 
-### Visão Geral:
-- **Receita Total**: R$ ${kpis.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-- **Total de Pedidos**: ${kpis.totalOrders.toLocaleString('pt-BR')}
+### Análise:
+${kpis.netFlow >= 0 ? '✅ Fluxo positivo - mais depósitos que saques' : '⚠️ Fluxo negativo - mais saques que depósitos'}
 
 ### Últimos Meses:
-${recentMonths.map(m => `- ${m.month}: R$ ${m.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`).join('\n')}
-
-### Tendência:
-Variação nos últimos 3 meses: **${trend}%**`;
+${kpis.transactionsByMonth.slice(-3).map(m => `- **${m.month}**: Depósitos ${formatCurrency(m.deposits)} | Saques ${formatCurrency(m.withdrawals)}`).join('\n')}`;
     }
 
     // Recomendações
     if (q.includes('recomenda') || q.includes('sugest') || q.includes('melhorar') || q.includes('estratégia')) {
       return `## Recomendações Estratégicas 💡
 
-### Para Aumentar o Ticket Médio:
-1. **Bundles e combos** de filmes por categoria
-2. **Programa de pontos** com recompensas
-3. **Sugestões personalizadas** baseadas no histórico
+### Para Gestão de Crédito:
+1. **Modelo de Scoring**: Implementar análise preditiva de risco
+2. **Precificação Dinâmica**: Ajustar taxas por perfil de risco
+3. **Automação**: Acelerar processo de análise de propostas
 
-### Para Reduzir Atrasos:
-1. **Sistema de notificação** multicanal (SMS, Email, WhatsApp)
-2. **Incentivos** para devolução antecipada
-3. **Análise preditiva** de clientes com risco de atraso
+### Para Crescimento da Base:
+1. **Segmentação**: Identificar clientes com potencial de cross-sell
+2. **Digital First**: Expandir canais digitais
+3. **Parcerias**: Integrar com fintechs e marketplaces
 
-### Para Crescimento Geral:
-1. **Expansão** nas regiões com menor penetração
-2. **Digitalização** com catálogo online
-3. **Parcerias** com cinemas e eventos culturais
+### Para Gestão de Risco:
+1. **Monitoramento**: Dashboard em tempo real de indicadores
+2. **Alertas**: Sistema de early warning para inadimplência
+3. **Diversificação**: Reduzir concentração geográfica
 
-### Próximos Passos Sugeridos:
-- Implementar dashboard de monitoramento em tempo real
-- Criar alertas automáticos para KPIs críticos
-- Desenvolver modelo preditivo de churn`;
+### Próximos Passos:
+- Integrar bureaus de crédito
+- Implementar Open Banking
+- Desenvolver app mobile para clientes`;
     }
 
     // Resposta genérica
     return `Entendi sua pergunta sobre "${question}". 
 
-Com base nos dados disponíveis:
-- **${kpis.totalOrders.toLocaleString('pt-BR')}** pedidos analisados
-- **${kpis.totalCustomers.toLocaleString('pt-BR')}** clientes cadastrados
-- **${data.agencies.length}** agências ativas
+Com base nos dados bancários disponíveis:
+- **${formatNumber(kpis.totalProposals)}** propostas de crédito analisadas
+- **${formatNumber(kpis.totalCustomers)}** clientes cadastrados
+- **${formatNumber(kpis.totalAccounts)}** contas ativas
+- **${data.agencies.length}** agências
 
-Posso fornecer análises específicas sobre ticket médio, atrasos, receita por agência/estado, top clientes e recomendações. Qual aspecto você gostaria de explorar?`;
+Posso fornecer análises sobre: carteira de crédito, taxas de juros, movimentações, saldos por agência/estado, e recomendações estratégicas. Qual aspecto você gostaria de explorar?`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -228,7 +242,7 @@ Posso fornecer análises específicas sobre ticket médio, atrasos, receita por 
           <Bot className="h-5 w-5 text-primary-foreground" />
         </div>
         <div>
-          <h3 className="font-semibold">Assistente de Analytics</h3>
+          <h3 className="font-semibold">Assistente de Analytics Bancário</h3>
           <p className="text-xs text-muted-foreground">Converse com seus dados</p>
         </div>
         <Sparkles className="ml-auto h-5 w-5 text-primary animate-pulse" />
@@ -314,7 +328,7 @@ Posso fornecer análises específicas sobre ticket médio, atrasos, receita por 
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Pergunte sobre os dados..."
+            placeholder="Pergunte sobre os dados bancários..."
             className="flex-1"
             disabled={isLoading}
           />

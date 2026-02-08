@@ -1,73 +1,116 @@
-# Welcome to your Lovable project
+# Discorama Insights Hub
 
-## Project info
+Painel analítico baseado em Vite + React + TypeScript para visualização e exploração de métricas financeiras e de clientes.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Visão geral
 
-## How can I edit this code?
+Este repositório contém a interface frontend do **Discorama Insights Hub**, uma aplicação para geração de dashboards e relatórios a partir de conjuntos de dados CSV (armazenados em `public/data`). O projeto usa componentes reutilizáveis, gráficos e integração com utilitários para leitura e transformação dos dados.
 
-There are several ways of editing your application.
+## Tecnologias
 
-**Use Lovable**
+- Vite
+- React 18
+- TypeScript
+- Tailwind CSS
+- shadcn-ui / Radix UI
+- Recharts (visualizações)
+- Vitest (testes)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Estrutura principal do projeto
 
-Changes made via Lovable will be committed automatically to this repo.
+- [src](src) — código-fonte da aplicação (entradas, páginas e componentes)
+  - [src/components](src/components) — componentes UI e de dashboard
+  - [src/lib](src/lib) — serviços e utilitários (ex.: `dataService.ts`)
+  - [src/pages](src/pages) — rotas/páginas da aplicação
+- [public/data](public/data) — arquivos CSV usados como fonte de dados (ex.: `agencias.csv`, `transacoes.csv`)
+- vite.config.ts — configuração do Vite
+- package.json — scripts e dependências
 
-**Use your preferred IDE**
+## Scripts úteis
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Instale dependências:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+npm install
+```
 
-Follow these steps:
+Executar em desenvolvimento:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Gerar build de produção:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm run build
+```
 
-**Use GitHub Codespaces**
+Build em modo development (útil para debug do build):
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+npm run build:dev
+```
 
-## What technologies are used for this project?
+Servir a build localmente:
 
-This project is built with:
+```bash
+npm run preview
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Lint (ESLint):
 
-## How can I deploy this project?
+```bash
+npm run lint
+```
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Testes (Vitest):
 
-## Can I connect a custom domain to my Lovable project?
+```bash
+npm run test        # execução única
+npm run test:watch  # modo watch
+```
 
-Yes, you can!
+## Dados
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Os dados utilizados pela aplicação estão em `public/data` no formato CSV. Para adicionar ou atualizar dados:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- Coloque o arquivo CSV em `public/data`.
+- Atualize os parsers/serviços em `src/lib/dataService.ts` se necessário.
+
+## Desenvolvimento e contribuições
+
+- Abra uma issue descrevendo o problema ou a feature desejada.
+- Crie uma branch com um nome descritivo (`feat/login`, `fix/chart-legend`).
+- Faça PRs pequenos e focados; inclua screenshots quando pertinente.
+
+Recomendações de fluxo local:
+
+```bash
+git checkout -b feat/minha-nova-feature
+npm install
+npm run dev
+# ao concluir
+git add .
+git commit -m "feat: descrição curta"
+git push origin feat/minha-nova-feature
+# abra um Pull Request
+```
+
+## Testes e qualidade
+
+- Use `npm run lint` para verificar problemas de lint.
+- Execute `npm run test` para rodar os testes unitários existentes.
+
+## Observações
+
+- Este projeto foi iniciado a partir de um template e adaptações foram feitas para concentrar funcionalidades de visualização de dados.
+- Verifique os arquivos de configuração (`tsconfig.json`, `vite.config.ts`, `tailwind.config.ts`) quando precisar ajustar builds ou comportamento do CSS.
+
+## Contato
+
+Se precisar de ajuda com o projeto, abra uma issue ou entre em contato com os mantenedores do repositório.
+
+---
+
+Arquivo atualizado automaticamente para refletir a estrutura e os scripts do projeto.
